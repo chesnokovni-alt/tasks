@@ -330,11 +330,11 @@ async function loadLive() {
   try {
     const row = usdRes.value?.marketdata?.data?.[0];
     if (!row || row[1] == null) throw 0;
-    const val = row[1], prev = row[2];
+    const val = row[1], prev = row[36]; // LASTTOPREVPRICE теперь берётся из правильной колонки
     document.getElementById('tk-usd').textContent = val.toFixed(2) + ' ₽';
     const el = document.getElementById('usdCur');
     if (el) el.value = val.toFixed(2);
-    if (prev) {
+    if (prev && prev > 0) {
       const chg = (val - prev) / prev * 100;
       const d = document.getElementById('tk-usd-d');
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
