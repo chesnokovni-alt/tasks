@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Инвестиционный портфель</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
 :root{--bg:#f5f7fa;--s:#ffffff;--s2:#f0f2f5;--s3:#e8ebf0;--b:#d1d5db;--b2:#9ca3af;--acc:#2563eb;--acc2:#0891b2;--acc3:#ea580c;--t:#1f2937;--mu:#6b7280;--mu2:#4b5563;--green:#16a34a;--red:#dc2626;--gold:#d97706;--pur:#7c3aed;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -58,13 +59,13 @@ select{padding-right:8px;cursor:pointer;}
 .sum-item .sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
 .sum-item .sv{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;}
 /* Month table */
-.mtw{background:var(--s);border:1px solid var(--b);overflow:auto;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.mtw{background:var(--s);border:1px solid var(--b);overflow:auto;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:0 12px;}
 .mt{width:100%;border-collapse:collapse;min-width:680px;}
-.mt th{background:var(--s2);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);padding:10px 12px;text-align:left;border-bottom:1px solid var(--b);font-weight:500;white-space:nowrap;}
+.mt th{background:var(--s2);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);padding:10px 16px;text-align:left;border-bottom:1px solid var(--b);font-weight:500;white-space:nowrap;}
 .mt td{padding:0;border-bottom:1px solid var(--b);vertical-align:middle;}
 .mt tr:last-child td{border-bottom:none;}
 .mt tr:hover td{background:rgba(37,99,235,.03);}
-.mn{padding:10px 12px;font-size:11px;color:var(--mu2);white-space:nowrap;}
+.mn{padding:10px 16px;font-size:11px;color:var(--mu2);white-space:nowrap;}
 .mn.past{color:var(--mu);}
 .mn.cur{color:var(--acc);font-weight:600;}
 .mti{width:100%;background:transparent;border:none;border-left:1px solid var(--b);color:var(--t);font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 8px;outline:none;transition:background .15s;}
@@ -389,9 +390,9 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">📈 IMOEX · Индекс Мосбиржи</div>
       <div class="mr">
-        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="imoexStart" value="2744" step="10" oninput="calc()"><span class="u">пт</span></div></div>
-        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="imoexCur" value="2822" step="10" oninput="calc()"><span class="u">пт</span></div></div>
-        <div class="ig" style="grid-column:1/-1"><div class="il">Прогноз конец года</div><div class="iw"><input type="number" id="imoexEnd" value="3300" step="10" oninput="calc()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="imoexStart" value="2744" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="imoexCur" value="2822" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig" style="grid-column:1/-1"><div class="il">Прогноз конец года</div><div class="iw"><input type="number" id="imoexEnd" value="3300" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
         <div class="ig" style="grid-column:1/-1"><div class="il">IMOEX-доходность за год</div><div class="disp" id="imoexYield">—</div></div>
       </div>
     </div>
@@ -399,9 +400,9 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">🏦 Ключевая ставка ЦБ</div>
       <div class="mr">
-        <div class="ig"><div class="il">Начало года %</div><div class="iw"><input type="number" id="rateStart" value="16" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
-        <div class="ig"><div class="il">Текущая %</div><div class="iw"><input type="number" id="rateCur" value="15.5" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
-        <div class="ig"><div class="il">Прогноз конец года %</div><div class="iw"><input type="number" id="rateEnd" value="12" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Начало года %</div><div class="iw"><input type="number" id="rateStart" value="16" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Текущая %</div><div class="iw"><input type="number" id="rateCur" value="15.5" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Прогноз конец года %</div><div class="iw"><input type="number" id="rateEnd" value="12" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
         <div class="ig"><div class="il">Средняя за год %</div><div class="disp" id="avgRate">—</div></div>
       </div>
     </div>
@@ -409,10 +410,10 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">💱 USD/RUB · Инфляция</div>
       <div class="mr">
-        <div class="ig"><div class="il">USD нач. года ₽</div><div class="iw"><input type="number" id="usdStart" value="79" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">USD нач. года ₽</div><div class="iw"><input type="number" id="usdStart" value="79" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc();autoSave()"><span class="u">%</span></div></div>
       </div>
     </div>
   </div>
@@ -420,7 +421,12 @@ window.addEventListener('load', () => {
 
 <!-- CATEGORIES (стартовый портфель) -->
 <div class="sec">
-  <div class="sec-t">🗂 Структура стартового портфеля на 01.01 <button class="btn-sm" onclick="addCat()">+ Категория</button></div>
+  <div class="sec-t">🗂 Структура стартового портфеля на 01.01 
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm" onclick="addCat()">+ Категория</button>
+      <button class="btn-sm" onclick="clearOnServer()" style="border-color:var(--red);color:var(--red)">✕ Очистить</button>
+    </div>
+  </div>
 
   <!-- Шапка: стартовая сумма = сумма категорий -->
   <div style="background:var(--s);border:1px solid var(--acc);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
@@ -466,6 +472,12 @@ window.addEventListener('load', () => {
       <div class="sum-item"><div class="sl">Доход от взносов</div><div class="sv tg" id="s-cincome">—</div></div>
       <div class="sum-item"><div class="sl">Доход стартового</div><div class="sv ta2" id="s-sincome">—</div></div>
     </div>
+  </div>
+
+  <!-- Sankey Chart -->
+  <div class="cs" style="margin-top:14px;">
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:12px;">📈 Доход по категориям (диаграмма Санки)</div>
+    <div id="sankeyChart" style="width:100%;height:320px;"></div>
   </div>
 
   <!-- MONTHLY TABLE -->
@@ -549,6 +561,55 @@ let cats=[
 ];
 let nid=6;
 let contribs=Array.from({length:12},()=>({amt:60000,at:'deposit'}));
+
+// ── SERVER SYNC ──
+const API_URL = window.location.origin + '/api/data';
+
+async function loadFromServer() {
+  try {
+    const res = await fetch(API_URL);
+    const result = await res.json();
+    if (result.success && result.data) {
+      if (result.data.cats) cats = result.data.cats;
+      if (result.data.contribs) contribs = result.data.contribs;
+      if (result.data.nid) nid = result.data.nid;
+      return true;
+    }
+  } catch (err) {
+    console.log('Нет сохранённых данных на сервере');
+  }
+  return false;
+}
+
+async function saveToServer() {
+  try {
+    const data = { cats, contribs, nid };
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    console.log('Данные сохранены на сервер');
+  } catch (err) {
+    console.error('Ошибка сохранения:', err);
+  }
+}
+
+async function clearOnServer() {
+  try {
+    await fetch(API_URL, { method: 'DELETE' });
+    console.log('Данные удалены с сервера');
+  } catch (err) {
+    console.error('Ошибка удаления:', err);
+  }
+}
+
+// Автосохранение при любом изменении
+function autoSave() {
+  // Сохраняем с небольшой задержкой чтобы не спамить запросами
+  clearTimeout(window._saveTimeout);
+  window._saveTimeout = setTimeout(saveToServer, 500);
+}
 
 // ── HELPERS ──
 const g=id=>document.getElementById(id);
@@ -688,8 +749,8 @@ function initMT(){
     tr.innerHTML=`
       <td class="mn${isPast?' past':isCur?' cur':''}">${MONTHS[i]}${isCur?' ◂':''}</td>
       <td><input class="mti" type="number" value="${c.amt||''}" placeholder="0"
-        oninput="contribs[${i}].amt=+this.value||0;updateMTCalc();calc()" step="5000"></td>
-      <td><select class="mts" onchange="contribs[${i}].at=this.value;updateMTCalc();calc()">
+        oninput="contribs[${i}].amt=+this.value||0;updateMTCalc();calc();autoSave()" step="5000"></td>
+      <td><select class="mts" onchange="contribs[${i}].at=this.value;updateMTCalc();calc();autoSave()">
         ${Object.entries(ATYPES).map(([k,v])=>`<option value="${k}"${c.at===k?' selected':''}>${v.label}</option>`).join('')}
       </select></td>
       <td class="mcalc" id="mt-inc-${i}">—</td>
@@ -764,6 +825,7 @@ function updateCatsCalc(){
     const ay=assetYield(cat.at,m);
     const inc=(cat.amount||0)*ay;
     const pct=tot>0?((cat.amount/tot)*100).toFixed(1):'0';
+    cat.income=inc; // сохраняем доход для Sankey
     totInc+=inc;
     const cy=g('cy_'+cat.id); if(cy) cy.textContent=(ay*100).toFixed(1)+'%';
     const cp=g('cp_'+cat.id); if(cp) cp.textContent=pct+'%';
@@ -792,15 +854,17 @@ function ucField(id,f,v){
   const c=cats.find(c=>c.id===id); if(c) c[f]=v;
   updateCatsCalc();
   calc();
+  autoSave();
 }
 
 // При изменении названия — только данные
 function uc(id,f,v){
   const c=cats.find(c=>c.id===id); if(c) c[f]=v;
   updateCatsCalc(); calc();
+  autoSave();
 }
-function dc(id){cats=cats.filter(c=>c.id!==id);renderCats();calc();}
-function addCat(){cats.push({id:nid++,name:'Новая',amount:0,color:PAL[nid%PAL.length],at:'deposit'});renderCats();calc();}
+function dc(id){cats=cats.filter(c=>c.id!==id);renderCats();calc();autoSave();}
+function addCat(){cats.push({id:nid++,name:'Новая',amount:0,color:PAL[nid%PAL.length],at:'deposit'});renderCats();calc();autoSave();}
 
 // ── DONUT ──
 function renderDonut(tot){
@@ -826,6 +890,85 @@ function renderDonut(tot){
     const pct=tot>0?((c.amount/tot)*100).toFixed(0):0;
     leg.innerHTML+=`<div class="li"><div class="ld" style="background:${c.color}"></div><span class="ln">${c.name}</span><span>${pct}%</span></div>`;
   });
+}
+
+// ── SANKEY CHART ──
+let sankeyChart=null;
+function renderSankey(){
+  const chartDom=g('sankeyChart');
+  if(!chartDom)return;
+  if(sankeyChart) sankeyChart.dispose();
+  sankeyChart=echarts.init(chartDom);
+  
+  // Собираем данные: категории с доходом > 0
+  const activeCats=cats.filter(c=>c.amount&&c.amount>0&&c.income!==undefined);
+  if(activeCats.length===0){
+    sankeyChart.setOption({title:{text:'Нет данных',left:'center',top:'center',textStyle:{color:'#6b7280'}}});
+    return;
+  }
+  
+  // Ноды: только категории и итоговый доход (без стартового капитала)
+  const nodes=activeCats.map(c=>({name:c.name,itemStyle:{color:c.color}}));
+  nodes.push({name:'Итоговый доход',itemStyle:{color:'#16a34a'}});
+  const nodeIdx=name=>nodes.findIndex(n=>n.name===name);
+  
+  // Линии: от категорий к доходу (только доход, без стартовой суммы)
+  const links=[];
+  activeCats.forEach(c=>{
+    if(c.income!==0){
+      links.push({
+        source:c.name,
+        target:'Итоговый доход',
+        value:Math.abs(c.income),
+        lineStyle:{color:c.income>0?'#16a34a':'#dc2626'},
+        label:{formatter:'{c} ₽'}
+      });
+    }
+  });
+  
+  // Толщина линии = величина дохода (одинаковая толщина от начала до конца)
+  const maxInc=Math.max(...activeCats.map(c=>Math.abs(c.income||0)),1);
+  
+  sankeyChart.setOption({
+    tooltip:{trigger:'item',triggerOn:'mousemove',formatter:p=>{
+      if(p.dataType==='edge')return`${p.data.source} → ${p.data.target}<br/>${fmt(p.value)} ₽`;
+      return`${p.name}<br/>Вклад: ${fmt(p.value)} ₽`;
+    }},
+    series:[{
+      type:'sankey',
+      layout:'none',
+      focusNodeAdjacency:'allEdges',
+      data:nodes,
+      links:links,
+      lineStyle:{
+        color:'source',
+        curveness:.5,
+        width:function(params){
+          // Фиксированная толщина пропорциональная доходу, но одинаковая по всей линии
+          const baseWidth=Math.max(8,Math.abs(params.value)/maxInc*20);
+          return baseWidth;
+        }
+      },
+      emphasis:{focus:'adjacency'},
+      label:{
+        fontSize:12,
+        color:'#1f2937',
+        fontWeight:'bold',
+        formatter:function(params){
+          if(params.dataType==='edge'){
+            return params.value+' ₽';
+          }
+          return params.name;
+        }
+      },
+      levels:[
+        {depth:0,itemStyle:{color:'inherit'}},
+        {depth:1,itemStyle:{color:'#16a34a'}}
+      ]
+    }]
+  });
+  
+  window.addEventListener('resize',()=>sankeyChart.resize());
 }
 
 // ── MAIN CALC ──
@@ -879,12 +1022,21 @@ function calc(){
   g('rb5').textContent='−'+fmt(inflLoss);
   g('rb6').textContent=(realGain>=0?'+':'')+fmt(realGain);
   g('rb6').className='rbv '+(realGain>=0?'tg':'tr');
+  
+  // Обновляем Sankey после расчёта
+  renderSankey();
 }
 
 // ── INIT ──
-renderCats();
-renderMT();
-calc();
+async function init(){
+  // Загружаем данные с сервера если есть
+  await loadFromServer();
+  renderCats();
+  renderMT();
+  calc();
+  renderSankey();
+}
+init();
 </script>
 </body>
 </html>
