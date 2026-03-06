@@ -434,10 +434,12 @@ async function loadLive() {
   }
 
   // ── RGBITR (Индекс гособлигаций) ──
+  let rgbiCurrentValue = null;
   try {
     const row = rgbiRes.value?.marketdata?.data?.[0];
     if (!row || row[2] == null) throw 0;
     const val = row[2], prev = row[3];
+    rgbiCurrentValue = val;
     // Обновляем поле текущего значения RGBI и тикер наверху
     const el = document.getElementById('rgbiCur');
     if (el) el.value = val.toFixed(2);
@@ -449,14 +451,7 @@ async function loadLive() {
       dEl.textContent = d;
       dEl.className = 'td ' + (prev > 0 ? (val > prev ? 'dp' : val < prev ? 'dn' : 'dne') : 'dne');
     }
-    // Расчёт изменения с начала года для тикера
-    const yEl = document.getElementById('tk-rgbi-y');
-    const startVal = +document.getElementById('rgbiStart')?.value || 0;
-    if (yEl && startVal > 0) {
-      const yoyChg = ((val - startVal) / startVal) * 100;
-      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
-      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
-    }
+    // Расчёт изменения с начала года будет после загрузки исторических данных
     document.getElementById('tk-rgbi-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
@@ -474,7 +469,18 @@ async function loadLive() {
       // Берём первое доступное значение в диапазоне (начало года)
       const startVal = hist[0][5]; // CLOSE цена
       const elStart = document.getElementById('rgbiStart');
-      if (elStart && startVal != null) elStart.value = startVal.toFixed(2);
+      if (elStart && startVal != null) {
+        elStart.value = startVal.toFixed(2);
+        // Теперь обновляем yoyChg для RGBITR, так как rgbiStart заполнен
+        if (rgbiCurrentValue != null && startVal > 0) {
+          const yEl = document.getElementById('tk-rgbi-y');
+          const yoyChg = ((rgbiCurrentValue - startVal) / startVal) * 100;
+          if (yEl) {
+            yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+            yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+          }
+        }
+      }
       ok++;
     }
   } catch(e) {
