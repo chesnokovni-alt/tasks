@@ -238,7 +238,7 @@ async function loadLive() {
 
   // Три запроса параллельно — ждём все сразу, не по очереди
   const T = 5000; // таймаут 5 сек на каждый
-  const [imoexRes, usdRes, ratesRes] = await Promise.allSettled([
+  const [imoexRes, usdRes, ratesRes, rgbiRes] = await Promise.allSettled([
 
     // 1. IMOEX
     fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
@@ -250,6 +250,10 @@ async function loadLive() {
 
     // 3. Ставка ЦБ + инфляция — один запрос даёт оба показателя
     fetch('https://iss.moex.com/iss/statistics/engines/currency/markets/selt/rates.json?iss.meta=off',
+      { signal: AbortSignal.timeout(T) }).then(r => r.json()),
+
+    // 4. RGBITR — индекс гособлигаций (текущее значение)
+    fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
       { signal: AbortSignal.timeout(T) }).then(r => r.json()),
   ]);
 
@@ -365,9 +369,40 @@ async function loadLive() {
     document.getElementById('tk-infl-s').textContent = 'Нет связи · последнее известное';
   }
 
+  // ── RGBITR (Индекс гособлигаций) ──
+  try {
+    const row = rgbiRes.value?.marketdata?.data?.[0];
+    if (!row || row[2] == null) throw 0;
+    const val = row[2], prev = row[3];
+    // Обновляем поле текущего значения RGBI
+    const el = document.getElementById('rgbiCur');
+    if (el) el.value = val.toFixed(2);
+    ok++;
+  } catch(e) {
+    // fallback — оставляем значение по умолчанию
+  }
+
+  // ── Загрузка RGBI на начало года (исторические данные) ──
+  try {
+    const year = new Date().getFullYear();
+    const startYear = year - 1;
+    const rgbiHistRes = await fetch(`https://iss.moex.com/iss/history/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&from=${startYear}-12-25&to=${year}-01-15`, 
+      { signal: AbortSignal.timeout(T) }).then(r => r.json());
+    const hist = rgbiHistRes?.history?.data;
+    if (hist && hist.length > 0) {
+      // Берём первое доступное значение в диапазоне (начало года)
+      const startVal = hist[0][5]; // CLOSE цена
+      const elStart = document.getElementById('rgbiStart');
+      if (elStart && startVal != null) elStart.value = startVal.toFixed(2);
+      ok++;
+    }
+  } catch(e) {
+    // fallback — оставляем значение по умолчанию
+  }
+
   // ── Статус ──
-  dot.style.background = ok >= 3 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
-  label.textContent = ok >= 3 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
+  dot.style.background = ok >= 4 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
+  label.textContent = ok >= 4 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
   upd.textContent = ok > 0
     ? `Обновлено в ${nowTime()} · iss.moex.com`
     : `Нет соединения · используются последние данные`;
@@ -414,6 +449,19 @@ window.addEventListener('load', () => {
         <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
         <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
         <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RGBI -->
+  <div class="mg">
+    <div class="mc" style="grid-column:1/-1;">
+      <div class="mc-t">🏛 RGBITR · Индекс гособлигаций Мосбиржи</div>
+      <div class="mr">
+        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="rgbiStart" value="745" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="rgbiCur" value="756" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Конец года (прогноз)</div><div class="iw"><input type="number" id="rgbiEnd" value="780" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">RGBI-доходность за год</div><div class="disp" id="rgbiYield">—</div></div>
       </div>
     </div>
   </div>
@@ -639,6 +687,9 @@ function macro(){
     uC:+g('usdCur').value||77.17,
     uE:+g('usdEnd').value||85,
     inf:+g('inflEnd').value/100||.055,
+    rgbiS:+g('rgbiStart').value||745,
+    rgbiC:+g('rgbiCur').value||756,
+    rgbiE:+g('rgbiEnd').value||780,
     // pS вычисляется из категорий — не хранится здесь
     get pS(){ return cats.reduce((s,c)=>s+Math.max(c.amount||0,0),0); },
   };
@@ -977,9 +1028,11 @@ function calc(){
   const ar=avgRate(m);
   const iret=(m.imoexE-m.imoexS)/m.imoexS;
   const uret=(m.uE-m.uS)/m.uS;
+  const rgbiRet=(m.rgbiE-m.rgbiS)/m.rgbiS;
 
   // Display helpers
   g('imoexYield').textContent=(iret>=0?'+':'')+((iret)*100).toFixed(1)+'%';
+  g('rgbiYield').textContent=(rgbiRet>=0?'+':'')+((rgbiRet)*100).toFixed(1)+'%';
   g('avgRate').textContent=(ar*100).toFixed(1)+'%';
 
   // Monthly table
