@@ -22,13 +22,13 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding:3
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .upd{font-size:9px;color:var(--mu);margin-top:4px;text-align:right;}
 /* Ticker */
-.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(5,1fr);margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .tc{padding:14px 16px;border-right:1px solid var(--b);}
 .tc:last-child{border-right:none;}
 .tl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
 .tv-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
 .tv{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:600;}
-.td{font-size:9px;padding:2px 7px;border:1px solid;}
+.td{font-size:9px;padding:2px 7px;border:1px solid;white-space:nowrap;}
 .ts{font-size:9px;color:var(--mu);margin-top:3px;}
 .dp{border-color:var(--green);color:var(--green);}
 .dn{border-color:var(--red);color:var(--red);}
@@ -124,6 +124,10 @@ canvas#donut{display:block;margin:0 auto 14px;}
 .ta{color:var(--acc);}
 .ta2{color:var(--acc2);}
 .tm{color:var(--mu);}
+@media(max-width:1100px){
+  .ticker{grid-template-columns:repeat(3,1fr);}
+  .tc:nth-child(4),.tc:nth-child(5){grid-column:span 1;}
+}
 @media(max-width:880px){
   .mg,.cats-l,.tc2{grid-template-columns:1fr;}
   .ticker{grid-template-columns:1fr 1fr;}
@@ -160,6 +164,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--acc)" id="tk-imoex">—</div>
       <div class="td dne" id="tk-imoex-d">—</div>
+      <div class="td dne" id="tk-imoex-y">—</div>
     </div>
     <div class="ts" id="tk-imoex-s">iss.moex.com</div>
   </div>
@@ -168,14 +173,25 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--gold)" id="tk-usd">—</div>
       <div class="td dne" id="tk-usd-d">—</div>
+      <div class="td dne" id="tk-usd-y">—</div>
     </div>
     <div class="ts" id="tk-usd-s">iss.moex.com</div>
+  </div>
+  <div class="tc">
+    <div class="tl">RGBITR · Индекс гособлигаций</div>
+    <div class="tv-row">
+      <div class="tv" style="color:var(--pur)" id="tk-rgbi">—</div>
+      <div class="td dne" id="tk-rgbi-d">—</div>
+      <div class="td dne" id="tk-rgbi-y">—</div>
+    </div>
+    <div class="ts" id="tk-rgbi-s">iss.moex.com</div>
   </div>
   <div class="tc">
     <div class="tl">Ключевая ставка ЦБ РФ</div>
     <div class="tv-row">
       <div class="tv" style="color:var(--acc2)" id="tk-rate">—</div>
       <div class="td dne" id="tk-rate-d">—</div>
+      <div class="td dne" id="tk-rate-y">—</div>
     </div>
     <div class="ts" id="tk-rate-s">cbr.ru</div>
   </div>
@@ -208,23 +224,30 @@ function nowTime() {
 // Показать последнее известное если данные не загрузились
 const FALLBACK = {
   imoex: '2 822', imoexD: '—', rate: '15.5', rateD: '13.02.2026',
-  usd: '77.17', usdD: '—', infl: '5.75', inflD: '02.03.2026'
+  usd: '77.17', usdD: '—', infl: '5.75', inflD: '02.03.2026',
+  rgbi: '756', rgbiD: '—'
 };
 
 function applyFallback() {
   const s = FALLBACK;
   document.getElementById('tk-imoex').textContent = s.imoex;
   document.getElementById('tk-imoex-d').textContent = s.imoexD;
+  document.getElementById('tk-imoex-y').textContent = '—';
   document.getElementById('tk-imoex-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-usd').textContent = s.usd + ' ₽';
   document.getElementById('tk-usd-d').textContent = s.usdD;
   document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-rate').textContent = s.rate + '%';
   document.getElementById('tk-rate-d').textContent = s.rateD;
+  document.getElementById('tk-rate-y').textContent = '—';
   document.getElementById('tk-rate-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-infl').textContent = s.infl + '%';
   document.getElementById('tk-infl-d').textContent = s.inflD;
   document.getElementById('tk-infl-s').textContent = 'Нет связи · последнее известное';
+  document.getElementById('tk-rgbi').textContent = s.rgbi;
+  document.getElementById('tk-rgbi-d').textContent = s.rgbiD;
+  document.getElementById('tk-rgbi-y').textContent = '—';
+  document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
 }
 
 async function loadLive() {
@@ -238,7 +261,8 @@ async function loadLive() {
 
   // Три запроса параллельно — ждём все сразу, не по очереди
   const T = 5000; // таймаут 5 сек на каждый
-  const [imoexRes, usdRes, ratesRes] = await Promise.allSettled([
+  const T_SHORT = 2000; // короткий таймаут для истории RGBI
+  const [imoexRes, usdRes, ratesRes, rgbiRes, rgbiHistRes] = await Promise.allSettled([
 
     // 1. IMOEX
     fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
@@ -251,6 +275,23 @@ async function loadLive() {
     // 3. Ставка ЦБ + инфляция — один запрос даёт оба показателя
     fetch('https://iss.moex.com/iss/statistics/engines/currency/markets/selt/rates.json?iss.meta=off',
       { signal: AbortSignal.timeout(T) }).then(r => r.json()),
+
+    // 4. RGBITR — индекс гособлигаций (текущее значение)
+    fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
+      { signal: AbortSignal.timeout(T) }).then(r => r.json()),
+
+    // 5. RGBITR история — начало года (короткий таймаут, не блокирует)
+    (async () => {
+      const year = new Date().getFullYear();
+      const startYear = year - 1;
+      try {
+        const res = await fetch(`https://iss.moex.com/iss/history/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&from=${startYear}-12-25&to=${year}-01-15`, 
+          { signal: AbortSignal.timeout(T_SHORT) });
+        return await res.json();
+      } catch(e) {
+        return null;
+      }
+    })(),
   ]);
 
   let ok = 0;
@@ -269,10 +310,19 @@ async function loadLive() {
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
       d.className = 'td ' + (chg >= 0 ? 'dp' : 'dn');
     }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-imoex-y');
+    const startVal = +document.getElementById('imoexStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
     document.getElementById('tk-imoex-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-imoex').textContent = FALLBACK.imoex;
+    document.getElementById('tk-imoex-y').textContent = '—';
     document.getElementById('tk-imoex-s').textContent = 'Нет связи · последнее известное';
   }
 
@@ -280,20 +330,29 @@ async function loadLive() {
   try {
     const row = usdRes.value?.marketdata?.data?.[0];
     if (!row || row[1] == null) throw 0;
-    const val = row[1], prev = row[2];
+    const val = row[1], prev = row[36]; // LASTTOPREVPRICE теперь берётся из правильной колонки
     document.getElementById('tk-usd').textContent = val.toFixed(2) + ' ₽';
     const el = document.getElementById('usdCur');
     if (el) el.value = val.toFixed(2);
-    if (prev) {
+    if (prev && prev > 0) {
       const chg = (val - prev) / prev * 100;
       const d = document.getElementById('tk-usd-d');
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
       d.className = 'td ' + (chg >= 0 ? 'dp' : 'dn');
     }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-usd-y');
+    const startVal = +document.getElementById('usdStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
     document.getElementById('tk-usd-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-usd').textContent = FALLBACK.usd + ' ₽';
+    document.getElementById('tk-usd-y').textContent = '—';
     document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   }
 
@@ -314,6 +373,14 @@ async function loadLive() {
         document.getElementById('tk-rate').textContent = rv + '%';
         const el = document.getElementById('tk-rate-d');
         el.textContent = rd; el.className = 'td dne';
+        // Расчёт изменения с начала года для тикера
+        const yEl = document.getElementById('tk-rate-y');
+        const startVal = +document.getElementById('rateStart')?.value || 0;
+        if (yEl && startVal > 0) {
+          const yoyChg = ((rv - startVal) / startVal) * 100;
+          yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+          yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+        }
         document.getElementById('tk-rate-s').textContent = 'LIVE · cbr.ru via moex · ' + nowTime();
         const re = document.getElementById('rateCur');
         if (re) re.value = rv;
@@ -359,15 +426,64 @@ async function loadLive() {
   } catch(e) {
     document.getElementById('tk-rate').textContent = FALLBACK.rate + '%';
     document.getElementById('tk-rate-d').textContent = FALLBACK.rateD;
+    document.getElementById('tk-rate-y').textContent = '—';
     document.getElementById('tk-rate-s').textContent = 'Нет связи · последнее известное';
     document.getElementById('tk-infl').textContent = FALLBACK.infl + '%';
     document.getElementById('tk-infl-d').textContent = FALLBACK.inflD;
     document.getElementById('tk-infl-s').textContent = 'Нет связи · последнее известное';
   }
 
+  // ── RGBITR (Индекс гособлигаций) ──
+  try {
+    const row = rgbiRes.value?.marketdata?.data?.[0];
+    if (!row || row[2] == null) throw 0;
+    const val = row[2], prev = row[3];
+    // Обновляем поле текущего значения RGBI и тикер наверху
+    const el = document.getElementById('rgbiCur');
+    if (el) el.value = val.toFixed(2);
+    // Обновляем тикер
+    document.getElementById('tk-rgbi').textContent = val.toFixed(2);
+    const dEl = document.getElementById('tk-rgbi-d');
+    const d = prev != null ? ((prev > 0 ? '+' : '') + ((val - prev) / prev * 100).toFixed(1) + '%') : '—';
+    if (dEl) {
+      dEl.textContent = d;
+      dEl.className = 'td ' + (prev > 0 ? (val > prev ? 'dp' : val < prev ? 'dn' : 'dne') : 'dne');
+    }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-rgbi-y');
+    const startVal = +document.getElementById('rgbiStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
+    document.getElementById('tk-rgbi-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
+    ok++;
+  } catch(e) {
+    document.getElementById('tk-rgbi').textContent = FALLBACK.rgbi;
+    document.getElementById('tk-rgbi-d').textContent = FALLBACK.rgbiD;
+    document.getElementById('tk-rgbi-y').textContent = '—';
+    document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
+  }
+
+  // ── Загрузка RGBI на начало года (исторические данные) ──
+  // Данные уже загружены в rgbiHistRes из Promise.allSettled
+  try {
+    const hist = rgbiHistRes.value?.history?.data;
+    if (hist && hist.length > 0) {
+      // Берём первое доступное значение в диапазоне (начало года)
+      const startVal = hist[0][5]; // CLOSE цена
+      const elStart = document.getElementById('rgbiStart');
+      if (elStart && startVal != null) elStart.value = startVal.toFixed(2);
+      ok++;
+    }
+  } catch(e) {
+    // fallback — оставляем значение по умолчанию
+  }
+
   // ── Статус ──
-  dot.style.background = ok >= 3 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
-  label.textContent = ok >= 3 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
+  dot.style.background = ok >= 4 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
+  label.textContent = ok >= 4 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
   upd.textContent = ok > 0
     ? `Обновлено в ${nowTime()} · iss.moex.com`
     : `Нет соединения · используются последние данные`;
@@ -414,6 +530,19 @@ window.addEventListener('load', () => {
         <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
         <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
         <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RGBI -->
+  <div class="mg">
+    <div class="mc" style="grid-column:1/-1;">
+      <div class="mc-t">🏛 RGBITR · Индекс гособлигаций Мосбиржи</div>
+      <div class="mr">
+        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="rgbiStart" value="745" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="rgbiCur" value="756" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Конец года (прогноз)</div><div class="iw"><input type="number" id="rgbiEnd" value="780" step="0.01" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">RGBI-доходность за год</div><div class="disp" id="rgbiYield">—</div></div>
       </div>
     </div>
   </div>
@@ -639,6 +768,9 @@ function macro(){
     uC:+g('usdCur').value||77.17,
     uE:+g('usdEnd').value||85,
     inf:+g('inflEnd').value/100||.055,
+    rgbiS:+g('rgbiStart').value||745,
+    rgbiC:+g('rgbiCur').value||756,
+    rgbiE:+g('rgbiEnd').value||780,
     // pS вычисляется из категорий — не хранится здесь
     get pS(){ return cats.reduce((s,c)=>s+Math.max(c.amount||0,0),0); },
   };
@@ -977,9 +1109,11 @@ function calc(){
   const ar=avgRate(m);
   const iret=(m.imoexE-m.imoexS)/m.imoexS;
   const uret=(m.uE-m.uS)/m.uS;
+  const rgbiRet=(m.rgbiE-m.rgbiS)/m.rgbiS;
 
   // Display helpers
   g('imoexYield').textContent=(iret>=0?'+':'')+((iret)*100).toFixed(1)+'%';
+  g('rgbiYield').textContent=(rgbiRet>=0?'+':'')+((rgbiRet)*100).toFixed(1)+'%';
   g('avgRate').textContent=(ar*100).toFixed(1)+'%';
 
   // Monthly table
