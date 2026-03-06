@@ -851,27 +851,65 @@ function renderSankey(){
     return;
   }
   
-  // Ноды: источник (категория) -> цель (Доход)
-  const nodes=[{name:'Стартовый портфель',itemStyle:{color:'#2563eb'}},...activeCats.map(c=>({name:c.name,itemStyle:{color:c.color}})),{name:'Итоговый доход',itemStyle:{color:'#16a34a'}}];
+  // Ноды: только категории и итоговый доход (без стартового капитала)
+  const nodes=activeCats.map(c=>({name:c.name,itemStyle:{color:c.color}}));
+  nodes.push({name:'Итоговый доход',itemStyle:{color:'#16a34a'}});
   const nodeIdx=name=>nodes.findIndex(n=>n.name===name);
   
-  // Линии: от стартового к категориям, от категорий к доходу
-  const links=activeCats.map(c=>({source:'Стартовый портфель',target:c.name,value:Math.round(c.amount)}));
+  // Линии: от категорий к доходу (только доход, без стартовой суммы)
+  const links=[];
   activeCats.forEach(c=>{
     if(c.income!==0){
-      links.push({source:c.name,target:'Итоговый доход',value:Math.abs(c.income),lineStyle:{color:c.income>0?'#16a34a':'#dc2626'}});
+      links.push({
+        source:c.name,
+        target:'Итоговый доход',
+        value:Math.abs(c.income),
+        lineStyle:{color:c.income>0?'#16a34a':'#dc2626'},
+        label:{formatter:'{c} ₽'}
+      });
     }
   });
   
-  // Толщина линии = величина дохода
+  // Толщина линии = величина дохода (одинаковая толщина от начала до конца)
   const maxInc=Math.max(...activeCats.map(c=>Math.abs(c.income||0)),1);
   
   sankeyChart.setOption({
     tooltip:{trigger:'item',triggerOn:'mousemove',formatter:p=>{
-      if(p.dataType==='edge')return`${p.data.source} → ${p.data.target}<br/>${fmt(p.value)}`;
-      return`${p.name}<br/>${fmt(p.value)}`;
+      if(p.dataType==='edge')return`${p.data.source} → ${p.data.target}<br/>${fmt(p.value)} ₽`;
+      return`${p.name}<br/>Вклад: ${fmt(p.value)} ₽`;
     }},
-    series:[{type:'sankey',layout:'none',focusNodeAdjacency:'allEdges',data:nodes,links:links,lineStyle:{color:'source',curveness:.3,width:p=>Math.max(1,Math.abs(p.value)/maxInc*12)},emphasis:{focus:'adjacency'},label:{fontSize:11,color:'#1f2937'},levels:[{depth:0,itemStyle:{color:'#2563eb'}},{depth:1,itemStyle:{color:'inherit'}},{depth:2,itemStyle:{color:'#16a34a'}}]}]
+    series:[{
+      type:'sankey',
+      layout:'none',
+      focusNodeAdjacency:'allEdges',
+      data:nodes,
+      links:links,
+      lineStyle:{
+        color:'source',
+        curveness:.5,
+        width:function(params){
+          // Фиксированная толщина пропорциональная доходу, но одинаковая по всей линии
+          const baseWidth=Math.max(8,Math.abs(params.value)/maxInc*20);
+          return baseWidth;
+        }
+      },
+      emphasis:{focus:'adjacency'},
+      label:{
+        fontSize:12,
+        color:'#1f2937',
+        fontWeight:'bold',
+        formatter:function(params){
+          if(params.dataType==='edge'){
+            return params.value+' ₽';
+          }
+          return params.name;
+        }
+      },
+      levels:[
+        {depth:0,itemStyle:{color:'inherit'}},
+        {depth:1,itemStyle:{color:'#16a34a'}}
+      ]
+    }]
   });
   
   window.addEventListener('resize',()=>sankeyChart.resize());
