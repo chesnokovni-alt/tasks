@@ -1,3 +1,1 @@
-# No changes needed - only source/config files detected
-
-The file changes contain only source/config files (.html) and no build artifacts, dependencies, or temporary files that need to be ignored.
+(index.html is a source file, so no ignores needed)

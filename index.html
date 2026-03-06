@@ -22,7 +22,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding:3
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .upd{font-size:9px;color:var(--mu);margin-top:4px;text-align:right;}
 /* Ticker */
-.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(5,1fr);margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .tc{padding:14px 16px;border-right:1px solid var(--b);}
 .tc:last-child{border-right:none;}
 .tl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
@@ -124,6 +124,10 @@ canvas#donut{display:block;margin:0 auto 14px;}
 .ta{color:var(--acc);}
 .ta2{color:var(--acc2);}
 .tm{color:var(--mu);}
+@media(max-width:1100px){
+  .ticker{grid-template-columns:repeat(3,1fr);}
+  .tc:nth-child(4),.tc:nth-child(5){grid-column:span 1;}
+}
 @media(max-width:880px){
   .mg,.cats-l,.tc2{grid-template-columns:1fr;}
   .ticker{grid-template-columns:1fr 1fr;}
@@ -191,6 +195,14 @@ canvas#donut{display:block;margin:0 auto 14px;}
         oninput="document.getElementById('tk-infl').textContent=this.value+'%';syncInflManual()">%
     </div>
   </div>
+  <div class="tc">
+    <div class="tl">RGBITR · Индекс гособлигаций</div>
+    <div class="tv-row">
+      <div class="tv" style="color:var(--pur)" id="tk-rgbi">—</div>
+      <div class="td dne" id="tk-rgbi-d">—</div>
+    </div>
+    <div class="ts" id="tk-rgbi-s">iss.moex.com</div>
+  </div>
 </div>
 
 <script>
@@ -208,7 +220,8 @@ function nowTime() {
 // Показать последнее известное если данные не загрузились
 const FALLBACK = {
   imoex: '2 822', imoexD: '—', rate: '15.5', rateD: '13.02.2026',
-  usd: '77.17', usdD: '—', infl: '5.75', inflD: '02.03.2026'
+  usd: '77.17', usdD: '—', infl: '5.75', inflD: '02.03.2026',
+  rgbi: '756', rgbiD: '—'
 };
 
 function applyFallback() {
@@ -225,6 +238,9 @@ function applyFallback() {
   document.getElementById('tk-infl').textContent = s.infl + '%';
   document.getElementById('tk-infl-d').textContent = s.inflD;
   document.getElementById('tk-infl-s').textContent = 'Нет связи · последнее известное';
+  document.getElementById('tk-rgbi').textContent = s.rgbi;
+  document.getElementById('tk-rgbi-d').textContent = s.rgbiD;
+  document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
 }
 
 async function loadLive() {
@@ -374,12 +390,23 @@ async function loadLive() {
     const row = rgbiRes.value?.marketdata?.data?.[0];
     if (!row || row[2] == null) throw 0;
     const val = row[2], prev = row[3];
-    // Обновляем поле текущего значения RGBI
+    // Обновляем поле текущего значения RGBI и тикер наверху
     const el = document.getElementById('rgbiCur');
     if (el) el.value = val.toFixed(2);
+    // Обновляем тикер
+    document.getElementById('tk-rgbi').textContent = val.toFixed(2);
+    const dEl = document.getElementById('tk-rgbi-d');
+    const d = prev != null ? ((prev > 0 ? '+' : '') + ((val - prev) / prev * 100).toFixed(1) + '%') : '—';
+    if (dEl) {
+      dEl.textContent = d;
+      dEl.className = 'td ' + (prev > 0 ? (val > prev ? 'dp' : val < prev ? 'dn' : 'dne') : 'dne');
+    }
+    document.getElementById('tk-rgbi-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
-    // fallback — оставляем значение по умолчанию
+    document.getElementById('tk-rgbi').textContent = FALLBACK.rgbi;
+    document.getElementById('tk-rgbi-d').textContent = FALLBACK.rgbiD;
+    document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
   }
 
   // ── Загрузка RGBI на начало года (исторические данные) ──
@@ -401,8 +428,8 @@ async function loadLive() {
   }
 
   // ── Статус ──
-  dot.style.background = ok >= 4 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
-  label.textContent = ok >= 4 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
+  dot.style.background = ok >= 5 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
+  label.textContent = ok >= 5 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
   upd.textContent = ok > 0
     ? `Обновлено в ${nowTime()} · iss.moex.com`
     : `Нет соединения · используются последние данные`;
