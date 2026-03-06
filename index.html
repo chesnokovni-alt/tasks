@@ -6,14 +6,14 @@
 <title>Инвестиционный портфель</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080a0d;--s:#0f1217;--s2:#161b22;--s3:#1c2230;--b:#21272f;--b2:#2d3441;--acc:#c8ff00;--acc2:#00d4ff;--acc3:#ff6b35;--t:#dde2ec;--mu:#4a5268;--mu2:#6b7488;--green:#3ddc84;--red:#ff5757;--gold:#f0b429;--pur:#a78bfa;}
+:root{--bg:#f5f7fa;--s:#ffffff;--s2:#f0f2f5;--s3:#e8ebf0;--b:#d1d5db;--b2:#9ca3af;--acc:#2563eb;--acc2:#0891b2;--acc3:#ea580c;--t:#1f2937;--mu:#6b7280;--mu2:#4b5563;--green:#16a34a;--red:#dc2626;--gold:#d97706;--pur:#7c3aed;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--t);font-family:'JetBrains Mono',monospace;min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--b) 1px,transparent 1px),linear-gradient(90deg,var(--b) 1px,transparent 1px);background-size:40px 40px;opacity:.3;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--b) 1px,transparent 1px),linear-gradient(90deg,var(--b) 1px,transparent 1px);background-size:40px 40px;opacity:.15;}
 .w{max-width:1320px;margin:0 auto;padding:20px 18px;position:relative;z-index:1;}
 /* Header */
 header{display:flex;align-items:flex-end;justify-content:space-between;padding:32px 0 24px;}
-.logo{font-family:'Unbounded',sans-serif;font-size:clamp(20px,3.5vw,36px);font-weight:800;letter-spacing:-1.5px;}
+.logo{font-family:'Unbounded',sans-serif;font-size:clamp(20px,3.5vw,36px);font-weight:800;letter-spacing:-1.5px;color:#111827;}
 .logo em{color:var(--acc);font-style:normal;}
 .logo-sub{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mu);margin-top:5px;}
 .live-pill{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--green);}
@@ -21,7 +21,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding:3
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .upd{font-size:9px;color:var(--mu);margin-top:4px;text-align:right;}
 /* Ticker */
-.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:20px;}
+.ticker{background:var(--s);border:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .tc{padding:14px 16px;border-right:1px solid var(--b);}
 .tc:last-child{border-right:none;}
 .tl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
@@ -37,7 +37,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding:3
 .sec-t{font-family:'Unbounded',sans-serif;font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--mu2);padding:10px 0;border-bottom:1px solid var(--b);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
 /* Macro */
 .mg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.mc{background:var(--s);border:1px solid var(--b);padding:16px;}
+.mc{background:var(--s);border:1px solid var(--b);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .mc-t{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:12px;}
 .mr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .ig{display:flex;flex-direction:column;gap:5px;}
@@ -51,24 +51,24 @@ select{padding-right:8px;cursor:pointer;}
 /* Two col */
 .tc2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 /* Card */
-.card{background:var(--s);border:1px solid var(--b);}
+.card{background:var(--s);border:1px solid var(--b);box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .p16{padding:16px;}
 /* Summary boxes */
 .sum-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 .sum-item .sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
 .sum-item .sv{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;}
 /* Month table */
-.mtw{background:var(--s);border:1px solid var(--b);overflow:auto;}
+.mtw{background:var(--s);border:1px solid var(--b);overflow:auto;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .mt{width:100%;border-collapse:collapse;min-width:680px;}
 .mt th{background:var(--s2);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu2);padding:10px 12px;text-align:left;border-bottom:1px solid var(--b);font-weight:500;white-space:nowrap;}
 .mt td{padding:0;border-bottom:1px solid var(--b);vertical-align:middle;}
 .mt tr:last-child td{border-bottom:none;}
-.mt tr:hover td{background:rgba(255,255,255,.013);}
+.mt tr:hover td{background:rgba(37,99,235,.03);}
 .mn{padding:10px 12px;font-size:11px;color:var(--mu2);white-space:nowrap;}
 .mn.past{color:var(--mu);}
 .mn.cur{color:var(--acc);font-weight:600;}
 .mti{width:100%;background:transparent;border:none;border-left:1px solid var(--b);color:var(--t);font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 8px;outline:none;transition:background .15s;}
-.mti:focus{background:rgba(200,255,0,.04);border-left-color:var(--acc);}
+.mti:focus{background:rgba(37,99,235,.04);border-left-color:var(--acc);}
 .mti::-webkit-inner-spin-button{display:none;}
 .mts{width:100%;background:transparent;border:none;border-left:1px solid var(--b);color:var(--t);font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px 6px;outline:none;cursor:pointer;-webkit-appearance:none;}
 .mts:focus{border-left-color:var(--acc);}
@@ -80,7 +80,7 @@ select{padding-right:8px;cursor:pointer;}
 .ch{display:grid;grid-template-columns:12px 1fr 120px 90px 70px 100px 34px;gap:8px;padding:8px 14px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);border-bottom:1px solid var(--b);}
 .cr{display:grid;grid-template-columns:12px 1fr 120px 90px 70px 100px 34px;gap:8px;align-items:center;padding:0 14px;border-bottom:1px solid var(--b);transition:background .15s;}
 .cr:last-child{border-bottom:none;}
-.cr:hover{background:rgba(255,255,255,.012);}
+.cr:hover{background:rgba(37,99,235,.03);}
 .cdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .ci{background:transparent;border:none;border-bottom:1px solid transparent;color:var(--t);font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 4px;width:100%;outline:none;transition:border-bottom-color .15s;}
 .ci:focus{border-bottom-color:var(--acc);}
@@ -91,15 +91,15 @@ select{padding-right:8px;cursor:pointer;}
 .cf-l{grid-column:1/3;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu2);}
 .cf-v{text-align:right;font-family:'Unbounded',sans-serif;font-size:13px;}
 /* Chart */
-.cs{background:var(--s);border:1px solid var(--b);padding:16px;}
+.cs{background:var(--s);border:1px solid var(--b);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 canvas#donut{display:block;margin:0 auto 14px;}
 .leg{display:flex;flex-direction:column;gap:5px;}
 .li{display:flex;align-items:center;gap:8px;font-size:11px;padding:2px 0;}
 .ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .ln{flex:1;color:var(--mu2);}
 /* Result */
-.rw{background:var(--s);border:1px solid var(--acc);padding:26px 28px;position:relative;overflow:hidden;margin-bottom:28px;}
-.rg{position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(200,255,0,.07) 0%,transparent 65%);pointer-events:none;}
+.rw{background:var(--s);border:2px solid var(--acc);padding:26px 28px;position:relative;overflow:hidden;margin-bottom:28px;box-shadow:0 4px 12px rgba(37,99,235,.1);}
+.rg{position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.08) 0%,transparent 65%);pointer-events:none;}
 .rt{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:20px;}
 .rl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
 .rv{font-family:'Unbounded',sans-serif;font-size:clamp(26px,4.5vw,50px);font-weight:800;color:var(--acc);letter-spacing:-2px;line-height:1;}
@@ -140,7 +140,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
 <!-- HEADER -->
 <header>
   <div>
-    <div class="logo">ПОРТФЕЛЬ<em>.</em>PRO</div>
+    <div class="logo">ПОРТФЕЛЬ<em>.</em></div>
     <div class="logo-sub">Инвестиционный калькулятор · 2026</div>
   </div>
   <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
