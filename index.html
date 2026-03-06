@@ -176,6 +176,14 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="ts" id="tk-usd-s">iss.moex.com</div>
   </div>
   <div class="tc">
+    <div class="tl">RGBITR · Индекс гособлигаций</div>
+    <div class="tv-row">
+      <div class="tv" style="color:var(--pur)" id="tk-rgbi">—</div>
+      <div class="td dne" id="tk-rgbi-d">—</div>
+    </div>
+    <div class="ts" id="tk-rgbi-s">iss.moex.com</div>
+  </div>
+  <div class="tc">
     <div class="tl">Ключевая ставка ЦБ РФ</div>
     <div class="tv-row">
       <div class="tv" style="color:var(--acc2)" id="tk-rate">—</div>
@@ -194,14 +202,6 @@ canvas#donut{display:block;margin:0 auto 14px;}
         style="width:52px;margin-left:6px;background:var(--s2);border:1px solid var(--b2);color:var(--acc3);font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 4px;outline:none;"
         oninput="document.getElementById('tk-infl').textContent=this.value+'%';syncInflManual()">%
     </div>
-  </div>
-  <div class="tc">
-    <div class="tl">RGBITR · Индекс гособлигаций</div>
-    <div class="tv-row">
-      <div class="tv" style="color:var(--pur)" id="tk-rgbi">—</div>
-      <div class="td dne" id="tk-rgbi-d">—</div>
-    </div>
-    <div class="ts" id="tk-rgbi-s">iss.moex.com</div>
   </div>
 </div>
 
@@ -254,7 +254,8 @@ async function loadLive() {
 
   // Три запроса параллельно — ждём все сразу, не по очереди
   const T = 5000; // таймаут 5 сек на каждый
-  const [imoexRes, usdRes, ratesRes, rgbiRes] = await Promise.allSettled([
+  const T_SHORT = 2000; // короткий таймаут для истории RGBI
+  const [imoexRes, usdRes, ratesRes, rgbiRes, rgbiHistRes] = await Promise.allSettled([
 
     // 1. IMOEX
     fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
@@ -271,6 +272,19 @@ async function loadLive() {
     // 4. RGBITR — индекс гособлигаций (текущее значение)
     fetch('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTTOPREVPRICE',
       { signal: AbortSignal.timeout(T) }).then(r => r.json()),
+
+    // 5. RGBITR история — начало года (короткий таймаут, не блокирует)
+    (async () => {
+      const year = new Date().getFullYear();
+      const startYear = year - 1;
+      try {
+        const res = await fetch(`https://iss.moex.com/iss/history/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&from=${startYear}-12-25&to=${year}-01-15`, 
+          { signal: AbortSignal.timeout(T_SHORT) });
+        return await res.json();
+      } catch(e) {
+        return null;
+      }
+    })(),
   ]);
 
   let ok = 0;
@@ -410,12 +424,9 @@ async function loadLive() {
   }
 
   // ── Загрузка RGBI на начало года (исторические данные) ──
+  // Данные уже загружены в rgbiHistRes из Promise.allSettled
   try {
-    const year = new Date().getFullYear();
-    const startYear = year - 1;
-    const rgbiHistRes = await fetch(`https://iss.moex.com/iss/history/engines/stock/markets/index/boards/SNDX/securities/RGBITR.json?iss.meta=off&from=${startYear}-12-25&to=${year}-01-15`, 
-      { signal: AbortSignal.timeout(T) }).then(r => r.json());
-    const hist = rgbiHistRes?.history?.data;
+    const hist = rgbiHistRes.value?.history?.data;
     if (hist && hist.length > 0) {
       // Берём первое доступное значение в диапазоне (начало года)
       const startVal = hist[0][5]; // CLOSE цена
@@ -428,8 +439,8 @@ async function loadLive() {
   }
 
   // ── Статус ──
-  dot.style.background = ok >= 5 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
-  label.textContent = ok >= 5 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
+  dot.style.background = ok >= 4 ? 'var(--green)' : ok > 0 ? 'var(--gold)' : 'var(--red)';
+  label.textContent = ok >= 4 ? 'ДАННЫЕ АКТУАЛЬНЫ' : ok > 0 ? 'ЧАСТИЧНОЕ ОБНОВЛЕНИЕ' : 'НЕТ СОЕДИНЕНИЯ';
   upd.textContent = ok > 0
     ? `Обновлено в ${nowTime()} · iss.moex.com`
     : `Нет соединения · используются последние данные`;
