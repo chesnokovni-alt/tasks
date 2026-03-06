@@ -173,7 +173,6 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--gold)" id="tk-usd">—</div>
       <div class="td dne" id="tk-usd-d">—</div>
-      <div class="td dne" id="tk-usd-y">—</div>
     </div>
     <div class="ts" id="tk-usd-s">iss.moex.com</div>
   </div>
@@ -236,7 +235,6 @@ function applyFallback() {
   document.getElementById('tk-imoex-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-usd').textContent = s.usd + ' ₽';
   document.getElementById('tk-usd-d').textContent = s.usdD;
-  document.getElementById('tk-usd-y').textContent = '—';
   document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-rate').textContent = s.rate + '%';
   document.getElementById('tk-rate-d').textContent = s.rateD;
@@ -341,19 +339,10 @@ async function loadLive() {
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
       d.className = 'td ' + (chg >= 0 ? 'dp' : 'dn');
     }
-    // Расчёт изменения с начала года для тикера
-    const yEl = document.getElementById('tk-usd-y');
-    const startVal = +document.getElementById('usdStart')?.value || 0;
-    if (yEl && startVal > 0) {
-      const yoyChg = ((val - startVal) / startVal) * 100;
-      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
-      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
-    }
     document.getElementById('tk-usd-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-usd').textContent = FALLBACK.usd + ' ₽';
-    document.getElementById('tk-usd-y').textContent = '—';
     document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   }
 
