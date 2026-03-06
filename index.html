@@ -28,7 +28,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding:3
 .tl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;}
 .tv-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
 .tv{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:600;}
-.td{font-size:9px;padding:2px 7px;border:1px solid;}
+.td{font-size:9px;padding:2px 7px;border:1px solid;white-space:nowrap;}
 .ts{font-size:9px;color:var(--mu);margin-top:3px;}
 .dp{border-color:var(--green);color:var(--green);}
 .dn{border-color:var(--red);color:var(--red);}
@@ -164,6 +164,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--acc)" id="tk-imoex">—</div>
       <div class="td dne" id="tk-imoex-d">—</div>
+      <div class="td dne" id="tk-imoex-y">—</div>
     </div>
     <div class="ts" id="tk-imoex-s">iss.moex.com</div>
   </div>
@@ -172,6 +173,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--gold)" id="tk-usd">—</div>
       <div class="td dne" id="tk-usd-d">—</div>
+      <div class="td dne" id="tk-usd-y">—</div>
     </div>
     <div class="ts" id="tk-usd-s">iss.moex.com</div>
   </div>
@@ -180,6 +182,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--pur)" id="tk-rgbi">—</div>
       <div class="td dne" id="tk-rgbi-d">—</div>
+      <div class="td dne" id="tk-rgbi-y">—</div>
     </div>
     <div class="ts" id="tk-rgbi-s">iss.moex.com</div>
   </div>
@@ -188,6 +191,7 @@ canvas#donut{display:block;margin:0 auto 14px;}
     <div class="tv-row">
       <div class="tv" style="color:var(--acc2)" id="tk-rate">—</div>
       <div class="td dne" id="tk-rate-d">—</div>
+      <div class="td dne" id="tk-rate-y">—</div>
     </div>
     <div class="ts" id="tk-rate-s">cbr.ru</div>
   </div>
@@ -228,18 +232,22 @@ function applyFallback() {
   const s = FALLBACK;
   document.getElementById('tk-imoex').textContent = s.imoex;
   document.getElementById('tk-imoex-d').textContent = s.imoexD;
+  document.getElementById('tk-imoex-y').textContent = '—';
   document.getElementById('tk-imoex-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-usd').textContent = s.usd + ' ₽';
   document.getElementById('tk-usd-d').textContent = s.usdD;
+  document.getElementById('tk-usd-y').textContent = '—';
   document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-rate').textContent = s.rate + '%';
   document.getElementById('tk-rate-d').textContent = s.rateD;
+  document.getElementById('tk-rate-y').textContent = '—';
   document.getElementById('tk-rate-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-infl').textContent = s.infl + '%';
   document.getElementById('tk-infl-d').textContent = s.inflD;
   document.getElementById('tk-infl-s').textContent = 'Нет связи · последнее известное';
   document.getElementById('tk-rgbi').textContent = s.rgbi;
   document.getElementById('tk-rgbi-d').textContent = s.rgbiD;
+  document.getElementById('tk-rgbi-y').textContent = '—';
   document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
 }
 
@@ -303,10 +311,19 @@ async function loadLive() {
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
       d.className = 'td ' + (chg >= 0 ? 'dp' : 'dn');
     }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-imoex-y');
+    const startVal = +document.getElementById('imoexStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
     document.getElementById('tk-imoex-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-imoex').textContent = FALLBACK.imoex;
+    document.getElementById('tk-imoex-y').textContent = '—';
     document.getElementById('tk-imoex-s').textContent = 'Нет связи · последнее известное';
   }
 
@@ -324,10 +341,19 @@ async function loadLive() {
       d.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
       d.className = 'td ' + (chg >= 0 ? 'dp' : 'dn');
     }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-usd-y');
+    const startVal = +document.getElementById('usdStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
     document.getElementById('tk-usd-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-usd').textContent = FALLBACK.usd + ' ₽';
+    document.getElementById('tk-usd-y').textContent = '—';
     document.getElementById('tk-usd-s').textContent = 'Нет связи · последнее известное';
   }
 
@@ -348,6 +374,14 @@ async function loadLive() {
         document.getElementById('tk-rate').textContent = rv + '%';
         const el = document.getElementById('tk-rate-d');
         el.textContent = rd; el.className = 'td dne';
+        // Расчёт изменения с начала года для тикера
+        const yEl = document.getElementById('tk-rate-y');
+        const startVal = +document.getElementById('rateStart')?.value || 0;
+        if (yEl && startVal > 0) {
+          const yoyChg = ((rv - startVal) / startVal) * 100;
+          yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+          yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+        }
         document.getElementById('tk-rate-s').textContent = 'LIVE · cbr.ru via moex · ' + nowTime();
         const re = document.getElementById('rateCur');
         if (re) re.value = rv;
@@ -393,6 +427,7 @@ async function loadLive() {
   } catch(e) {
     document.getElementById('tk-rate').textContent = FALLBACK.rate + '%';
     document.getElementById('tk-rate-d').textContent = FALLBACK.rateD;
+    document.getElementById('tk-rate-y').textContent = '—';
     document.getElementById('tk-rate-s').textContent = 'Нет связи · последнее известное';
     document.getElementById('tk-infl').textContent = FALLBACK.infl + '%';
     document.getElementById('tk-infl-d').textContent = FALLBACK.inflD;
@@ -415,11 +450,20 @@ async function loadLive() {
       dEl.textContent = d;
       dEl.className = 'td ' + (prev > 0 ? (val > prev ? 'dp' : val < prev ? 'dn' : 'dne') : 'dne');
     }
+    // Расчёт изменения с начала года для тикера
+    const yEl = document.getElementById('tk-rgbi-y');
+    const startVal = +document.getElementById('rgbiStart')?.value || 0;
+    if (yEl && startVal > 0) {
+      const yoyChg = ((val - startVal) / startVal) * 100;
+      yEl.textContent = (yoyChg >= 0 ? '+' : '') + yoyChg.toFixed(1) + '%';
+      yEl.className = 'td ' + (yoyChg >= 0 ? 'dp' : 'dn');
+    }
     document.getElementById('tk-rgbi-s').textContent = 'LIVE · iss.moex.com · ' + nowTime();
     ok++;
   } catch(e) {
     document.getElementById('tk-rgbi').textContent = FALLBACK.rgbi;
     document.getElementById('tk-rgbi-d').textContent = FALLBACK.rgbiD;
+    document.getElementById('tk-rgbi-y').textContent = '—';
     document.getElementById('tk-rgbi-s').textContent = 'Нет связи · последнее известное';
   }
 
