@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Инвестиционный портфель</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
 :root{--bg:#f5f7fa;--s:#ffffff;--s2:#f0f2f5;--s3:#e8ebf0;--b:#d1d5db;--b2:#9ca3af;--acc:#2563eb;--acc2:#0891b2;--acc3:#ea580c;--t:#1f2937;--mu:#6b7280;--mu2:#4b5563;--green:#16a34a;--red:#dc2626;--gold:#d97706;--pur:#7c3aed;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -468,6 +469,12 @@ window.addEventListener('load', () => {
     </div>
   </div>
 
+  <!-- Sankey Chart -->
+  <div class="cs" style="margin-top:14px;">
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:12px;">📈 Доход по категориям (диаграмма Санки)</div>
+    <div id="sankeyChart" style="width:100%;height:320px;"></div>
+  </div>
+
   <!-- MONTHLY TABLE -->
   <div class="mtw">
     <table class="mt">
@@ -764,6 +771,7 @@ function updateCatsCalc(){
     const ay=assetYield(cat.at,m);
     const inc=(cat.amount||0)*ay;
     const pct=tot>0?((cat.amount/tot)*100).toFixed(1):'0';
+    cat.income=inc; // сохраняем доход для Sankey
     totInc+=inc;
     const cy=g('cy_'+cat.id); if(cy) cy.textContent=(ay*100).toFixed(1)+'%';
     const cp=g('cp_'+cat.id); if(cp) cp.textContent=pct+'%';
@@ -828,6 +836,47 @@ function renderDonut(tot){
   });
 }
 
+// ── SANKEY CHART ──
+let sankeyChart=null;
+function renderSankey(){
+  const chartDom=g('sankeyChart');
+  if(!chartDom)return;
+  if(sankeyChart) sankeyChart.dispose();
+  sankeyChart=echarts.init(chartDom);
+  
+  // Собираем данные: категории с доходом > 0
+  const activeCats=cats.filter(c=>c.amount&&c.amount>0&&c.income!==undefined);
+  if(activeCats.length===0){
+    sankeyChart.setOption({title:{text:'Нет данных',left:'center',top:'center',textStyle:{color:'#6b7280'}}});
+    return;
+  }
+  
+  // Ноды: источник (категория) -> цель (Доход)
+  const nodes=[{name:'Стартовый портфель',itemStyle:{color:'#2563eb'}},...activeCats.map(c=>({name:c.name,itemStyle:{color:c.color}})),{name:'Итоговый доход',itemStyle:{color:'#16a34a'}}];
+  const nodeIdx=name=>nodes.findIndex(n=>n.name===name);
+  
+  // Линии: от стартового к категориям, от категорий к доходу
+  const links=activeCats.map(c=>({source:'Стартовый портфель',target:c.name,value:Math.round(c.amount)}));
+  activeCats.forEach(c=>{
+    if(c.income!==0){
+      links.push({source:c.name,target:'Итоговый доход',value:Math.abs(c.income),lineStyle:{color:c.income>0?'#16a34a':'#dc2626'}});
+    }
+  });
+  
+  // Толщина линии = величина дохода
+  const maxInc=Math.max(...activeCats.map(c=>Math.abs(c.income||0)),1);
+  
+  sankeyChart.setOption({
+    tooltip:{trigger:'item',triggerOn:'mousemove',formatter:p=>{
+      if(p.dataType==='edge')return`${p.data.source} → ${p.data.target}<br/>${fmt(p.value)}`;
+      return`${p.name}<br/>${fmt(p.value)}`;
+    }},
+    series:[{type:'sankey',layout:'none',focusNodeAdjacency:'allEdges',data:nodes,links:links,lineStyle:{color:'source',curveness:.3,width:p=>Math.max(1,Math.abs(p.value)/maxInc*12)},emphasis:{focus:'adjacency'},label:{fontSize:11,color:'#1f2937'},levels:[{depth:0,itemStyle:{color:'#2563eb'}},{depth:1,itemStyle:{color:'inherit'}},{depth:2,itemStyle:{color:'#16a34a'}}]}]
+  });
+  
+  window.addEventListener('resize',()=>sankeyChart.resize());
+}
+
 // ── MAIN CALC ──
 function calc(){
   const m=macro();
@@ -879,12 +928,16 @@ function calc(){
   g('rb5').textContent='−'+fmt(inflLoss);
   g('rb6').textContent=(realGain>=0?'+':'')+fmt(realGain);
   g('rb6').className='rbv '+(realGain>=0?'tg':'tr');
+  
+  // Обновляем Sankey после расчёта
+  renderSankey();
 }
 
 // ── INIT ──
 renderCats();
 renderMT();
 calc();
+renderSankey();
 </script>
 </body>
 </html>
