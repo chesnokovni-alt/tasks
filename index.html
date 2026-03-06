@@ -390,9 +390,9 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">📈 IMOEX · Индекс Мосбиржи</div>
       <div class="mr">
-        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="imoexStart" value="2744" step="10" oninput="calc()"><span class="u">пт</span></div></div>
-        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="imoexCur" value="2822" step="10" oninput="calc()"><span class="u">пт</span></div></div>
-        <div class="ig" style="grid-column:1/-1"><div class="il">Прогноз конец года</div><div class="iw"><input type="number" id="imoexEnd" value="3300" step="10" oninput="calc()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Начало года (01.01)</div><div class="iw"><input type="number" id="imoexStart" value="2744" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig"><div class="il">Текущий (факт)</div><div class="iw"><input type="number" id="imoexCur" value="2822" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
+        <div class="ig" style="grid-column:1/-1"><div class="il">Прогноз конец года</div><div class="iw"><input type="number" id="imoexEnd" value="3300" step="10" oninput="calc();autoSave()"><span class="u">пт</span></div></div>
         <div class="ig" style="grid-column:1/-1"><div class="il">IMOEX-доходность за год</div><div class="disp" id="imoexYield">—</div></div>
       </div>
     </div>
@@ -400,9 +400,9 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">🏦 Ключевая ставка ЦБ</div>
       <div class="mr">
-        <div class="ig"><div class="il">Начало года %</div><div class="iw"><input type="number" id="rateStart" value="16" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
-        <div class="ig"><div class="il">Текущая %</div><div class="iw"><input type="number" id="rateCur" value="15.5" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
-        <div class="ig"><div class="il">Прогноз конец года %</div><div class="iw"><input type="number" id="rateEnd" value="12" step="0.25" oninput="calc()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Начало года %</div><div class="iw"><input type="number" id="rateStart" value="16" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Текущая %</div><div class="iw"><input type="number" id="rateCur" value="15.5" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">Прогноз конец года %</div><div class="iw"><input type="number" id="rateEnd" value="12" step="0.25" oninput="calc();autoSave()"><span class="u">%</span></div></div>
         <div class="ig"><div class="il">Средняя за год %</div><div class="disp" id="avgRate">—</div></div>
       </div>
     </div>
@@ -410,10 +410,10 @@ window.addEventListener('load', () => {
     <div class="mc">
       <div class="mc-t">💱 USD/RUB · Инфляция</div>
       <div class="mr">
-        <div class="ig"><div class="il">USD нач. года ₽</div><div class="iw"><input type="number" id="usdStart" value="79" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc()"><span class="u">₽</span></div></div>
-        <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc()"><span class="u">%</span></div></div>
+        <div class="ig"><div class="il">USD нач. года ₽</div><div class="iw"><input type="number" id="usdStart" value="79" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">USD текущий ₽</div><div class="iw"><input type="number" id="usdCur" value="77.17" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">USD конец (прогноз) ₽</div><div class="iw"><input type="number" id="usdEnd" value="85" step="0.5" oninput="calc();autoSave()"><span class="u">₽</span></div></div>
+        <div class="ig"><div class="il">Инфляция прогноз % год</div><div class="iw"><input type="number" id="inflEnd" value="5.5" step="0.5" oninput="calc();autoSave()"><span class="u">%</span></div></div>
       </div>
     </div>
   </div>
@@ -421,7 +421,12 @@ window.addEventListener('load', () => {
 
 <!-- CATEGORIES (стартовый портфель) -->
 <div class="sec">
-  <div class="sec-t">🗂 Структура стартового портфеля на 01.01 <button class="btn-sm" onclick="addCat()">+ Категория</button></div>
+  <div class="sec-t">🗂 Структура стартового портфеля на 01.01 
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm" onclick="addCat()">+ Категория</button>
+      <button class="btn-sm" onclick="clearOnServer()" style="border-color:var(--red);color:var(--red)">✕ Очистить</button>
+    </div>
+  </div>
 
   <!-- Шапка: стартовая сумма = сумма категорий -->
   <div style="background:var(--s);border:1px solid var(--acc);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
@@ -556,6 +561,55 @@ let cats=[
 ];
 let nid=6;
 let contribs=Array.from({length:12},()=>({amt:60000,at:'deposit'}));
+
+// ── SERVER SYNC ──
+const API_URL = window.location.origin + '/api/data';
+
+async function loadFromServer() {
+  try {
+    const res = await fetch(API_URL);
+    const result = await res.json();
+    if (result.success && result.data) {
+      if (result.data.cats) cats = result.data.cats;
+      if (result.data.contribs) contribs = result.data.contribs;
+      if (result.data.nid) nid = result.data.nid;
+      return true;
+    }
+  } catch (err) {
+    console.log('Нет сохранённых данных на сервере');
+  }
+  return false;
+}
+
+async function saveToServer() {
+  try {
+    const data = { cats, contribs, nid };
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    console.log('Данные сохранены на сервер');
+  } catch (err) {
+    console.error('Ошибка сохранения:', err);
+  }
+}
+
+async function clearOnServer() {
+  try {
+    await fetch(API_URL, { method: 'DELETE' });
+    console.log('Данные удалены с сервера');
+  } catch (err) {
+    console.error('Ошибка удаления:', err);
+  }
+}
+
+// Автосохранение при любом изменении
+function autoSave() {
+  // Сохраняем с небольшой задержкой чтобы не спамить запросами
+  clearTimeout(window._saveTimeout);
+  window._saveTimeout = setTimeout(saveToServer, 500);
+}
 
 // ── HELPERS ──
 const g=id=>document.getElementById(id);
@@ -695,8 +749,8 @@ function initMT(){
     tr.innerHTML=`
       <td class="mn${isPast?' past':isCur?' cur':''}">${MONTHS[i]}${isCur?' ◂':''}</td>
       <td><input class="mti" type="number" value="${c.amt||''}" placeholder="0"
-        oninput="contribs[${i}].amt=+this.value||0;updateMTCalc();calc()" step="5000"></td>
-      <td><select class="mts" onchange="contribs[${i}].at=this.value;updateMTCalc();calc()">
+        oninput="contribs[${i}].amt=+this.value||0;updateMTCalc();calc();autoSave()" step="5000"></td>
+      <td><select class="mts" onchange="contribs[${i}].at=this.value;updateMTCalc();calc();autoSave()">
         ${Object.entries(ATYPES).map(([k,v])=>`<option value="${k}"${c.at===k?' selected':''}>${v.label}</option>`).join('')}
       </select></td>
       <td class="mcalc" id="mt-inc-${i}">—</td>
@@ -800,15 +854,17 @@ function ucField(id,f,v){
   const c=cats.find(c=>c.id===id); if(c) c[f]=v;
   updateCatsCalc();
   calc();
+  autoSave();
 }
 
 // При изменении названия — только данные
 function uc(id,f,v){
   const c=cats.find(c=>c.id===id); if(c) c[f]=v;
   updateCatsCalc(); calc();
+  autoSave();
 }
-function dc(id){cats=cats.filter(c=>c.id!==id);renderCats();calc();}
-function addCat(){cats.push({id:nid++,name:'Новая',amount:0,color:PAL[nid%PAL.length],at:'deposit'});renderCats();calc();}
+function dc(id){cats=cats.filter(c=>c.id!==id);renderCats();calc();autoSave();}
+function addCat(){cats.push({id:nid++,name:'Новая',amount:0,color:PAL[nid%PAL.length],at:'deposit'});renderCats();calc();autoSave();}
 
 // ── DONUT ──
 function renderDonut(tot){
@@ -972,10 +1028,15 @@ function calc(){
 }
 
 // ── INIT ──
-renderCats();
-renderMT();
-calc();
-renderSankey();
+async function init(){
+  // Загружаем данные с сервера если есть
+  await loadFromServer();
+  renderCats();
+  renderMT();
+  calc();
+  renderSankey();
+}
+init();
 </script>
 </body>
 </html>
